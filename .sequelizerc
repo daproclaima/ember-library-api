@@ -1,3 +1,5 @@
-export default {
-  config: 'config/db.js'
+const path = require('path');
+
+module.exports = {
+  config: path.resolve('./config','db.js'),
 }

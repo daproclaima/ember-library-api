@@ -6,17 +6,23 @@ import cors from '@koa/cors'
 import config from './config/app'
 import router from './routes/index'
 import db from './models/index'
+import errorMiddleware from './errors/middleware'
 
-const app = new Koa()
-app.db = db
+try {
+  const app = new Koa()
+  app.db = db
 
-app.use(logger())
-app.use(cors())
-app.use(bodyParser())
+  app.use(errorMiddleware)
+  app.use(logger())
+  app.use(cors())
+  app.use(bodyParser())
 
-app.use(router.allowedMethods())
-app.use(router.routes())
+  app.use(router.allowedMethods())
+  app.use(router.routes())
 
-app.listen(config.port, () => {
-  console.log(`Server listening on PORT ${config.port}`)
-})
+  app.listen(config.port, () => {
+    console.log(`Server listening on PORT ${config.port}`)
+  })
+} catch(error) {
+  console.error(error)
+}

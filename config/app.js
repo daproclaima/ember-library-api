@@ -4,5 +4,5 @@ dotenv.config()
 
 export default {
   environment: process.env.NODE_ENVIRONMENT,
-  port: process.env.PORT
+  port: process.env.PORT,
 }
