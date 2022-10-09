@@ -6,7 +6,7 @@ import { ROUTE_NAME_AUTHORS } from '../constants/ROUTE_NAMES'
 const router = new Router()
 
 const serialize = model => ({
-  type: 'authors',
+  type: 'author',
   id: model.id,
   attributes: {
     firstName: model.firstName,
