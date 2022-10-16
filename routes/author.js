@@ -2,8 +2,14 @@ import Router from 'koa-router'
 import { MODEL_NAME_AUTHOR } from '../constants/db/MODEL_NAMES'
 import { CODE_201, CODE_204 } from '../constants/CODES'
 import { ROUTE_NAME_AUTHORS } from '../constants/ROUTE_NAMES'
+import sequelize from 'sequelize';
 
 const router = new Router()
+
+/**
+ * @see https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
+ */
+const {Op} = sequelize;
 
 const serialize = model => ({
   type: 'author',
@@ -22,8 +28,23 @@ const serialize = model => ({
  * @description returns array of all authors in db
  */
 router.get('/', async (context, next) => {
+  const query = context.query['filter[query]']
+
+  let getAuthors = async () => await AuthorModel.findAll()
+
+  if(query) {
+    getAuthors = async () => await AuthorModel.findAll({
+      where: {
+        [Op.or]: [
+          { lastName: { [Op.iLike]: `%${query}%` } },
+          { firstName: { [Op.iLike]: `%${query}%` } },
+        ]
+      }
+    })
+  }
+
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR]
-  const arrayAuthors = await AuthorModel.findAll()
+  const arrayAuthors = await getAuthors()
 
   context.body = {data: arrayAuthors.map(author => serialize(author))}
 })
