@@ -4,15 +4,15 @@ import { CODE_201, CODE_204 } from '../constants/CODES'
 import { ROUTE_NAME_AUTHORS } from '../constants/ROUTE_NAMES'
 import sequelize from 'sequelize';
 
-const router = new Router()
-
 /**
  * @see https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
  */
 const {Op} = sequelize;
 
+const router = new Router()
+
 const serialize = model => ({
-  type: 'author',
+  type: MODEL_NAME_AUTHOR,
   id: model.id,
   attributes: {
     firstName: model.firstName,
@@ -25,10 +25,14 @@ const serialize = model => ({
 
 /**
  * @function
- * @description returns array of all authors in db
+ * @description returns array of all authors or those matching query params
+ * from db
  */
 router.get('/', async (context, next) => {
+  let arrayAuthors
+
   const query = context.query['filter[query]']
+  const AuthorModel = context.app.db[MODEL_NAME_AUTHOR]
 
   let getAuthors = async () => await AuthorModel.findAll()
 
@@ -43,21 +47,20 @@ router.get('/', async (context, next) => {
     })
   }
 
-  const AuthorModel = context.app.db[MODEL_NAME_AUTHOR]
-  const arrayAuthors = await getAuthors()
+  arrayAuthors = await getAuthors()
 
   context.body = {data: arrayAuthors.map(author => serialize(author))}
 })
 
 /**
  * @function
- * @description returns an author by provided id
+ * @description returns an author matching provided id
  */
 router.get('/:id', async (context, next) => {
   const id = context.params.id
 
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR]
-  const author = await AuthorModel.findOrFail({where: {id}})
+  const author = await AuthorModel.findOrFail({ where: {id} })
 
   context.body = { data: serialize(author)}
 })
@@ -69,8 +72,6 @@ router.get('/:id', async (context, next) => {
 router.post('/', async (context, next) => {
   const attributes = context.request.body.data.attributes
 
-  context.body = attributes
-
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR]
   const author = await AuthorModel.create(attributes)
 
@@ -81,14 +82,14 @@ router.post('/', async (context, next) => {
 
 /**
  * @function
- * @description update an author attributes when author found by provided id
+ * @description update an author attributes matching provided id
  */
 router.patch('/:id', async (context, next) => {
   const id = context.params.id
   const attributes = context.request.body.data.attributes
 
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR]
-  const author = await AuthorModel.findOrFail({where:{id}})
+  const author = await AuthorModel.findOrFail({ where: {id} })
 
   const data = {
     firstName: attributes.firstName || author.firstName,
@@ -103,13 +104,13 @@ router.patch('/:id', async (context, next) => {
 
 /**
  * @function
- * @description delete an author by provided id
+ * @description delete an author matching provided id
  */
 router.del('/:id', async (context, next) => {
   const id = context.params.id
 
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR]
-  const author = await AuthorModel.findOrFail({where:{id}})
+  const author = await AuthorModel.findOrFail({ where: {id} })
 
   await author.destroy()
 
@@ -117,4 +118,4 @@ router.del('/:id', async (context, next) => {
   context.body = null
 })
 
-export default  router.routes()
+export default router.routes()
