@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node index.js",
-    "start:dev": "nodemon index.js",
+    "dev": "nodemon index.js",
     "db:create": "sequelize-esm db:create"
   },
   "dependencies": {
