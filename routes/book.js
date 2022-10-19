@@ -1,5 +1,6 @@
 import Router from 'koa-router';
 import {
+  MODEL_NAME_AUTHOR,
   MODEL_NAME_BOOK,
 } from '../constants/db/MODEL_NAMES'
 import sequelize from 'sequelize';
@@ -12,19 +13,6 @@ import { CODE_201, CODE_204 } from '../constants/CODES'
 const {Op} = sequelize;
 
 const router = new Router();
-
-const serialize = model => ({
-  type: MODEL_NAME_BOOK,
-  id: model.id,
-  attributes: {
-    isbn: model.isbn,
-    title: model.title,
-    'publish-date': model.publishDate,
-  },
-  links: {
-    self: `${ROUTE_NAME_BOOKS}/${model.id}`
-  }
-})
 
 /**
  * @function
@@ -51,9 +39,8 @@ router.get('/', async (context, next) => {
   }
 
   arrayBooks = await getBooks()
-  context.body = arrayBooks
 
-  context.body = {data: arrayBooks.map(book => serialize(book))}
+  context.body = context.app.serialize(MODEL_NAME_BOOK, arrayBooks)
 })
 
 /**
@@ -66,7 +53,21 @@ router.get('/:id', async (context, next) => {
   const BookModel = context.app.db[MODEL_NAME_BOOK]
   const book = await BookModel.findOrFail({ where: {id} })
 
-  context.body = { data: serialize(book)}
+  context.body = context.app.serialize(MODEL_NAME_BOOK, book)
+})
+
+/**
+ * @function
+ * @description returns the author of the book matching provided id
+ */
+router.get('/:id/author', async (context, next) => {
+  const id = context.params.id
+
+  const BookModel = context.app.db[MODEL_NAME_BOOK]
+  const book = await BookModel.findOrFail({ where: {id} })
+  const author = await book.getAuthor()
+
+  context.body = context.app.serialize(MODEL_NAME_AUTHOR, author)
 })
 
 /**
@@ -85,7 +86,7 @@ router.post('/', async (context, next) => {
 
   context.status = CODE_201.code
   context.set('Location', `${ROUTE_NAME_BOOKS}/${book.id}`)
-  context.body = { data: serialize(book) }
+  context.body = context.app.serialize(MODEL_NAME_BOOK, book)
 })
 
 /**
@@ -105,7 +106,7 @@ router.patch('/:id', async (context, next) => {
   book.set(attributes)
   await book.save()
 
-  context.body = { data: serialize(book) }
+  context.body = context.app.serialize(MODEL_NAME_BOOK, book)
 })
 
 /**

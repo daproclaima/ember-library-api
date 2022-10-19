@@ -1,5 +1,5 @@
 import Router from 'koa-router'
-import { MODEL_NAME_AUTHOR } from '../constants/db/MODEL_NAMES'
+import { MODEL_NAME_AUTHOR, MODEL_NAME_BOOK } from '../constants/db/MODEL_NAMES'
 import { CODE_201, CODE_204 } from '../constants/CODES'
 import { ROUTE_NAME_AUTHORS } from '../constants/ROUTE_NAMES'
 import sequelize from 'sequelize';
@@ -10,18 +10,6 @@ import sequelize from 'sequelize';
 const {Op} = sequelize;
 
 const router = new Router()
-
-const serialize = model => ({
-  type: MODEL_NAME_AUTHOR,
-  id: model.id,
-  attributes: {
-    firstName: model.firstName,
-    lastName: model.lastName,
-  },
-  links: {
-    self: `${ROUTE_NAME_AUTHORS}/${model.id}`
-  }
-})
 
 /**
  * @function
@@ -49,7 +37,7 @@ router.get('/', async (context, next) => {
 
   arrayAuthors = await getAuthors()
 
-  context.body = {data: arrayAuthors.map(author => serialize(author))}
+  context.body = context.app.serialize(MODEL_NAME_AUTHOR, arrayAuthors)
 })
 
 /**
@@ -62,8 +50,23 @@ router.get('/:id', async (context, next) => {
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR]
   const author = await AuthorModel.findOrFail({ where: {id} })
 
-  context.body = { data: serialize(author)}
+  context.body = context.app.serialize(MODEL_NAME_AUTHOR, author)
 })
+
+/**
+ * @function
+ * @description returns the book of the author matching provided id
+ */
+router.get('/:id/books', async (context, next) => {
+  const id = context.params.id
+
+  const AuthorModel = context.app.db[MODEL_NAME_AUTHOR]
+  const author = await AuthorModel.findOrFail({ where: {id} })
+  const arrayBooks = await author.getBooks()
+
+  context.body = context.app.serialize(MODEL_NAME_BOOK, arrayBooks)
+})
+
 
 /**
  * @function
@@ -77,7 +80,7 @@ router.post('/', async (context, next) => {
 
   context.status = CODE_201.code
   context.set('Location', `${ROUTE_NAME_AUTHORS}/${author.id}`)
-  context.body = { data: serialize(author) }
+  context.body = context.app.serialize(MODEL_NAME_AUTHOR, author)
 })
 
 /**
@@ -99,7 +102,7 @@ router.patch('/:id', async (context, next) => {
   author.set(data)
   await author.save()
 
-  context.body = { data: serialize(author) }
+  context.body = context.app.serialize(MODEL_NAME_AUTHOR, author)
 })
 
 /**
