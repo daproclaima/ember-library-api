@@ -8,6 +8,7 @@ import router from './routes/index'
 import db from './models/index'
 import errorMiddleware from './errors/middleware'
 import serialize from './resources'
+import getAttributes from './middleware/get-attributes'
 
 try {
   const app = new Koa()
@@ -18,6 +19,7 @@ try {
   app.use(logger())
   app.use(cors())
   app.use(bodyParser())
+  app.use(getAttributes)
 
   app.use(router.allowedMethods())
   app.use(router.routes())

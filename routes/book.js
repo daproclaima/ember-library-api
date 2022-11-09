@@ -89,11 +89,7 @@ router.get('/:id/reviews', async (context, next) => {
  * @description create a new book
  */
 router.post('/', async (context, next) => {
-  const attributes = context.request.body.data.attributes
-  attributes.AuthorId = context.request.body.data.relationships.author.data.id
-  attributes.publishDate = attributes['publish-date']
-
-  context.body = attributes
+  const attributes = context.getAttributes()
 
   const BookModel = context.app.db[MODEL_NAME_BOOK]
   const book = await BookModel.create(attributes)
@@ -108,11 +104,9 @@ router.post('/', async (context, next) => {
  * @description update a book attributes matching provided id
  */
 router.patch('/:id', async (context, next) => {
-  const id = context.params.id
+  const attributes = context.getAttributes()
 
-  const attributes = context.request.body.data.attributes
-  attributes.AuthorId = context.request.body.data.relationships.author.data.id
-  attributes.publishDate = attributes['publish-date']
+  const id = context.params.id
 
   const BookModel = context.app.db[MODEL_NAME_BOOK]
   const book = await BookModel.findOrFail({ where: {id} })
