@@ -1,7 +1,7 @@
 import Router from 'koa-router';
 import {
   MODEL_NAME_AUTHOR,
-  MODEL_NAME_BOOK,
+  MODEL_NAME_BOOK, MODEL_NAME_REVIEW,
 } from '../constants/db/MODEL_NAMES'
 import sequelize from 'sequelize';
 import { ROUTE_NAME_BOOKS } from '../constants/ROUTE_NAMES'
@@ -68,6 +68,20 @@ router.get('/:id/author', async (context, next) => {
   const author = await book.getAuthor()
 
   context.body = context.app.serialize(MODEL_NAME_AUTHOR, author)
+})
+
+/**
+ * @function
+ * @description returns the reviews of the book matching provided id
+ */
+router.get('/:id/reviews', async (context, next) => {
+  const id = context.params.id
+
+  const BookModel = context.app.db[MODEL_NAME_BOOK]
+  const book = await BookModel.findOrFail({ where: {id} })
+  const arrayReviews = await book.getReviews()
+
+  context.body = context.app.serialize(MODEL_NAME_REVIEW, arrayReviews)
 })
 
 /**

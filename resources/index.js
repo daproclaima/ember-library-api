@@ -1,8 +1,10 @@
 import book from './book'
 import author from './author'
+import review from './review'
 const resources = {
   Book: book,
-  Author: author
+  Author: author,
+  Review: review
 }
 
 export default function serialize(type, model) {
