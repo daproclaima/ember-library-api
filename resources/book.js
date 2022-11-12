@@ -1,27 +1,27 @@
-import { MODEL_NAME_BOOK } from '../constants/db/MODEL_NAMES'
-import { ROUTE_NAME_BOOKS } from '../constants/ROUTE_NAMES'
+import { MODEL_NAME_BOOK } from "../constants/db/MODEL_NAMES";
+import { ROUTE_NAME_BOOKS } from "../constants/ROUTE_NAMES";
 
-export default model => ({
+export default (model) => ({
   type: MODEL_NAME_BOOK,
   id: model.id,
   attributes: {
     isbn: model.isbn,
     title: model.title,
-    'publish-date': model.publishDate,
+    "publish-date": model.publishDate,
   },
   links: {
-    self: `${ROUTE_NAME_BOOKS}/${model.id}`
+    self: `${ROUTE_NAME_BOOKS}/${model.id}`,
   },
   relationships: {
     author: {
       links: {
-        related: `/books/${model.id}/author`
-      }
+        related: `/books/${model.id}/author`,
+      },
     },
     reviews: {
       links: {
-        related: `/books/${model.id}/reviews`
-      }
-    }
-  }
-})
+        related: `/books/${model.id}/reviews`,
+      },
+    },
+  },
+});

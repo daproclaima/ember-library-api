@@ -1,9 +1,11 @@
 # DOCUMENTATION FOR LIBRARY API
 
 ## SUMMARY
+
 - ENVS VARS INSTALLATION(#1-ENVS-VARS-INSTALLATION)
 
 ## 1 ENVS VARS INSTALLATION
+
 Create a .env file and fill the following (get the private values for the missing fields)
 
 NODE_ENVIRONMENT=development

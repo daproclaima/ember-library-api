@@ -1,21 +1,24 @@
-import book from './book'
-import author from './author'
-import review from './review'
+import Book from "./book";
+import Author from "./author";
+import Review from "./review";
+import User from "./user";
+
 const resources = {
-  Book: book,
-  Author: author,
-  Review: review
-}
+  Book,
+  Author,
+  Review,
+  User,
+};
 
 export default function serialize(type, model) {
-  const resource = resources[type]
-  let callBack = () => resource(model)
+  const resource = resources[type];
+  let callBack = () => resource(model);
 
-  if(Array.isArray(model)) {
-    callBack = () => model.map(resource)
+  if (Array.isArray(model)) {
+    callBack = () => model.map(resource);
   }
 
-  let data = callBack()
+  let data = callBack();
 
-  return {data}
+  return { data };
 }

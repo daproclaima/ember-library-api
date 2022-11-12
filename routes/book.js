@@ -1,16 +1,17 @@
-import Router from 'koa-router';
+import Router from "koa-router";
 import {
   MODEL_NAME_AUTHOR,
-  MODEL_NAME_BOOK, MODEL_NAME_REVIEW,
-} from '../constants/db/MODEL_NAMES'
-import sequelize from 'sequelize';
-import { ROUTE_NAME_BOOKS } from '../constants/ROUTE_NAMES'
-import { CODE_201, CODE_204 } from '../constants/CODES'
+  MODEL_NAME_BOOK,
+  MODEL_NAME_REVIEW,
+} from "../constants/db/MODEL_NAMES";
+import sequelize from "sequelize";
+import { ROUTE_NAME_BOOKS } from "../constants/ROUTE_NAMES";
+import { CODE_201, CODE_204 } from "../constants/CODES";
 
 /**
  * @see https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
  */
-const {Op} = sequelize;
+const { Op } = sequelize;
 
 const router = new Router();
 
@@ -19,118 +20,119 @@ const router = new Router();
  * @description returns array of all books or those matching query params
  * from the db
  */
-router.get('/', async (context, next) => {
-  let arrayBooks
+router.get("/", async (context, next) => {
+  let arrayBooks;
 
-  const query = context.query['filter[query]']
-  const BookModel = context.app.db[MODEL_NAME_BOOK]
+  const query = context.query["filter[query]"];
+  const BookModel = context.app.db[MODEL_NAME_BOOK];
 
-  let getBooks = async () => await BookModel.findAll()
+  let getBooks = async () => await BookModel.findAll();
 
-  if(query) {
-    getBooks = async () => await BookModel.findAll({
-      where: {
-        [Op.or]: [
-          { title: { [Op.iLike]: `%${query}%` } },
-          { isbn: { [Op.iLike]: `%${query}%` } },
-        ]
-      }
-    })
+  if (query) {
+    getBooks = async () =>
+      await BookModel.findAll({
+        where: {
+          [Op.or]: [
+            { title: { [Op.iLike]: `%${query}%` } },
+            { isbn: { [Op.iLike]: `%${query}%` } },
+          ],
+        },
+      });
   }
 
-  arrayBooks = await getBooks()
+  arrayBooks = await getBooks();
 
-  context.body = context.app.serialize(MODEL_NAME_BOOK, arrayBooks)
-})
+  context.body = context.app.serialize(MODEL_NAME_BOOK, arrayBooks);
+});
 
 /**
  * @function
  * @description returns a book matching provided id
  */
-router.get('/:id', async (context, next) => {
-  const id = context.params.id
+router.get("/:id", async (context, next) => {
+  const id = context.params.id;
 
-  const BookModel = context.app.db[MODEL_NAME_BOOK]
-  const book = await BookModel.findOrFail({ where: {id} })
+  const BookModel = context.app.db[MODEL_NAME_BOOK];
+  const book = await BookModel.findOrFail({ where: { id } });
 
-  context.body = context.app.serialize(MODEL_NAME_BOOK, book)
-})
+  context.body = context.app.serialize(MODEL_NAME_BOOK, book);
+});
 
 /**
  * @function
  * @description returns the author of the book matching provided id
  */
-router.get('/:id/author', async (context, next) => {
-  const id = context.params.id
+router.get("/:id/author", async (context, next) => {
+  const id = context.params.id;
 
-  const BookModel = context.app.db[MODEL_NAME_BOOK]
-  const book = await BookModel.findOrFail({ where: {id} })
-  const author = await book.getAuthor()
+  const BookModel = context.app.db[MODEL_NAME_BOOK];
+  const book = await BookModel.findOrFail({ where: { id } });
+  const author = await book.getAuthor();
 
-  context.body = context.app.serialize(MODEL_NAME_AUTHOR, author)
-})
+  context.body = context.app.serialize(MODEL_NAME_AUTHOR, author);
+});
 
 /**
  * @function
  * @description returns the reviews of the book matching provided id
  */
-router.get('/:id/reviews', async (context, next) => {
-  const id = context.params.id
+router.get("/:id/reviews", async (context, next) => {
+  const id = context.params.id;
 
-  const BookModel = context.app.db[MODEL_NAME_BOOK]
-  const book = await BookModel.findOrFail({ where: {id} })
-  const arrayReviews = await book.getReviews()
+  const BookModel = context.app.db[MODEL_NAME_BOOK];
+  const book = await BookModel.findOrFail({ where: { id } });
+  const arrayReviews = await book.getReviews();
 
-  context.body = context.app.serialize(MODEL_NAME_REVIEW, arrayReviews)
-})
+  context.body = context.app.serialize(MODEL_NAME_REVIEW, arrayReviews);
+});
 
 /**
  * @function
  * @description create a new book
  */
-router.post('/', async (context, next) => {
-  const attributes = context.getAttributes()
+router.post("/", async (context, next) => {
+  const attributes = context.getAttributes();
 
-  const BookModel = context.app.db[MODEL_NAME_BOOK]
-  const book = await BookModel.create(attributes)
+  const BookModel = context.app.db[MODEL_NAME_BOOK];
+  const book = await BookModel.create(attributes);
 
-  context.status = CODE_201.code
-  context.set('Location', `${ROUTE_NAME_BOOKS}/${book.id}`)
-  context.body = context.app.serialize(MODEL_NAME_BOOK, book)
-})
+  context.status = CODE_201.code;
+  context.set("Location", `${ROUTE_NAME_BOOKS}/${book.id}`);
+  context.body = context.app.serialize(MODEL_NAME_BOOK, book);
+});
 
 /**
  * @function
  * @description update a book attributes matching provided id
  */
-router.patch('/:id', async (context, next) => {
-  const attributes = context.getAttributes()
+router.patch("/:id", async (context, next) => {
+  const attributes = context.getAttributes();
 
-  const id = context.params.id
+  const id = context.params.id;
 
-  const BookModel = context.app.db[MODEL_NAME_BOOK]
-  const book = await BookModel.findOrFail({ where: {id} })
+  const BookModel = context.app.db[MODEL_NAME_BOOK];
+  const book = await BookModel.findOrFail({ where: { id } });
 
-  book.set(attributes)
-  await book.save()
+  book.set(attributes);
+  await book.save();
 
-  context.body = context.app.serialize(MODEL_NAME_BOOK, book)
-})
+  context.body = context.app.serialize(MODEL_NAME_BOOK, book);
+});
 
 /**
  * @function
  * @description delete a book matching provided id
  */
-router.del('/:id', async (context, next) => {
-  const id = context.params.id
+router.del("/:id", async (context, next) => {
+  const id = context.params.id;
 
-  const BookModel = context.app.db[MODEL_NAME_BOOK]
-  const book = await BookModel.findOrFail({ where: {id} })
+  const BookModel = context.app.db[MODEL_NAME_BOOK];
+  const book = await BookModel.findOrFail({ where: { id } });
 
-  await book.destroy()
+  await book.destroy();
 
-  context.status = CODE_204.code
-  context.body = null
-})
+  context.status = CODE_204.code;
+  context.body = null;
+});
 
-export default router.routes()
+export default router.routes();

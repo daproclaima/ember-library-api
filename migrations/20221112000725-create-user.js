@@ -1,30 +1,27 @@
 "use strict";
-const { TABLE_NAME_AUTHORS } = require("../constants/db/TABLE_NAMES");
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Books", {
+    await queryInterface.createTable("Users", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      title: {
+      email: {
         type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
       },
-      isbn: {
+      username: {
         type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
       },
-      publishDate: {
-        type: Sequelize.DATE,
-      },
-      AuthorId: {
-        type: Sequelize.INTEGER,
-        reference: {
-          model: TABLE_NAME_AUTHORS,
-          key: "id",
-        },
+      passwordHash: {
+        type: Sequelize.STRING,
+        allowNull: false,
       },
       createdAt: {
         allowNull: false,
@@ -37,6 +34,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Books");
+    await queryInterface.dropTable("Users");
   },
 };
