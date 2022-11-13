@@ -16,7 +16,7 @@ module.exports = {
     code: 204,
   },
   CODE_401: {
-    title: "CLIENT_UNAUTHENTICATED",
+    title: "UNAUTHORIZED",
     code: 401,
   },
   CODE_403: {

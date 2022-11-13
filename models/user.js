@@ -1,5 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
+const NotFoundError = require('../errors/not-found')
+
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -75,5 +77,15 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "User",
     }
   );
+
+  User.findByEmail = async email => {
+    const user = await User.findOne({
+      where: { email }
+    })
+
+    if(!user) throw new NotFoundError()
+
+    return user
+  }
   return User;
 };
