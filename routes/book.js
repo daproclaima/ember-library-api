@@ -7,6 +7,7 @@ import {
 import sequelize from "sequelize";
 import { ROUTE_NAME_BOOKS } from "../constants/ROUTE_NAMES";
 import { CODE_201, CODE_204 } from "../constants/CODES";
+import currentUser from '../middleware/current-user'
 
 /**
  * @see https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
@@ -90,8 +91,9 @@ router.get("/:id/reviews", async (context, next) => {
  * @function
  * @description create a new book
  */
-router.post("/", async (context, next) => {
+router.post("/", currentUser, async (context, next) => {
   const attributes = context.getAttributes();
+  attributes.UserId = context.currentUser.id
 
   const BookModel = context.app.db[MODEL_NAME_BOOK];
   const book = await BookModel.create(attributes);
