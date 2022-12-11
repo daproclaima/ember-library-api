@@ -3,14 +3,11 @@ import {
   MODEL_NAME_BOOK,
   MODEL_NAME_REVIEW,
 } from "../constants/db/MODEL_NAMES";
-import sequelize from "sequelize";
 import { ROUTE_NAME_REVIEWS } from "../constants/ROUTE_NAMES";
 import { CODE_201, CODE_204 } from "../constants/CODES";
+import currentUser from '../middleware/current-user'
 
-/**
- * @see https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
- */
-const { Op } = sequelize;
+const includeUser = {include: ['User']}
 
 const router = new Router();
 
@@ -23,7 +20,8 @@ router.get("/", async (context, next) => {
   let arrayReviews;
   const ReviewModel = context.app.db[MODEL_NAME_REVIEW];
 
-  let getReviews = async () => await ReviewModel.findAll();
+  let getReviews = async () => await ReviewModel.findAll(includeUser);
+
 
   arrayReviews = await getReviews();
 
@@ -38,7 +36,7 @@ router.get("/:id", async (context, next) => {
   const id = context.params.id;
 
   const ReviewModel = context.app.db[MODEL_NAME_REVIEW];
-  const review = await ReviewModel.findOrFail({ where: { id } });
+  const review = await ReviewModel.findOrFail({ where: { id }, ...includeUser });
 
   context.body = context.app.serialize(MODEL_NAME_REVIEW, review);
 });
@@ -51,8 +49,8 @@ router.get("/:id/book", async (context, next) => {
   const id = context.params.id;
 
   const ReviewModel = context.app.db[MODEL_NAME_REVIEW];
-  const review = await ReviewModel.findOrFail({ where: { id } });
-  const book = await review.getBook();
+  const review = await ReviewModel.findOrFail({ where: { id } ,});
+  const book = await review.getBook(includeUser);
 
   context.body = context.app.serialize(MODEL_NAME_BOOK, book);
 });
@@ -61,11 +59,13 @@ router.get("/:id/book", async (context, next) => {
  * @function
  * @description create a new review
  */
-router.post("/", async (context, next) => {
+router.post("/", currentUser, async (context, next) => {
   const attributes = context.getAttributes();
+  attributes.UserId = context.currentUser.id
 
   const ReviewModel = context.app.db[MODEL_NAME_REVIEW];
   const review = await ReviewModel.create(attributes);
+  review.User = context.currentUser
 
   context.status = CODE_201.code;
   context.set("Location", `${ROUTE_NAME_REVIEWS}/${review.id}`);
@@ -82,7 +82,7 @@ router.patch("/:id", async (context, next) => {
   const id = context.params.id;
 
   const ReviewModel = context.app.db[MODEL_NAME_REVIEW];
-  const review = await ReviewModel.findOrFail({ where: { id } });
+  const review = await ReviewModel.findOrFail({ where: { id }, ...includeUser });
 
   review.set(attributes);
   await review.save();

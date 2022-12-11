@@ -9,11 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       Review.belongsTo(models.Book);
+      Review.belongsTo(models.User);
     }
   }
   Review.init(
     {
-      user: DataTypes.STRING,
       body: DataTypes.STRING,
     },
     {

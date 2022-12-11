@@ -8,6 +8,7 @@ export default (model) => ({
     isbn: model.isbn,
     title: model.title,
     "publish-date": model.publishDate,
+    username: model.User.username,
   },
   links: {
     self: `${ROUTE_NAME_BOOKS}/${model.id}`,

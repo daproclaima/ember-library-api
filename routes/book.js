@@ -14,6 +14,8 @@ import currentUser from '../middleware/current-user'
  */
 const { Op } = sequelize;
 
+const includeUser = {include: ['User']}
+
 const router = new Router();
 
 /**
@@ -27,7 +29,7 @@ router.get("/", async (context, next) => {
   const query = context.query["filter[query]"];
   const BookModel = context.app.db[MODEL_NAME_BOOK];
 
-  let getBooks = async () => await BookModel.findAll();
+  let getBooks = async () => await BookModel.findAll(includeUser);
 
   if (query) {
     getBooks = async () =>
@@ -38,6 +40,7 @@ router.get("/", async (context, next) => {
             { isbn: { [Op.iLike]: `%${query}%` } },
           ],
         },
+        ...includeUser
       });
   }
 
@@ -54,7 +57,7 @@ router.get("/:id", async (context, next) => {
   const id = context.params.id;
 
   const BookModel = context.app.db[MODEL_NAME_BOOK];
-  const book = await BookModel.findOrFail({ where: { id } });
+  const book = await BookModel.findOrFail({ where: { id }, ...includeUser});
 
   context.body = context.app.serialize(MODEL_NAME_BOOK, book);
 });
@@ -68,7 +71,7 @@ router.get("/:id/author", async (context, next) => {
 
   const BookModel = context.app.db[MODEL_NAME_BOOK];
   const book = await BookModel.findOrFail({ where: { id } });
-  const author = await book.getAuthor();
+  const author = await book.getAuthor(includeUser);
 
   context.body = context.app.serialize(MODEL_NAME_AUTHOR, author);
 });
@@ -82,7 +85,7 @@ router.get("/:id/reviews", async (context, next) => {
 
   const BookModel = context.app.db[MODEL_NAME_BOOK];
   const book = await BookModel.findOrFail({ where: { id } });
-  const arrayReviews = await book.getReviews();
+  const arrayReviews = await book.getReviews(includeUser);
 
   context.body = context.app.serialize(MODEL_NAME_REVIEW, arrayReviews);
 });
@@ -97,6 +100,8 @@ router.post("/", currentUser, async (context, next) => {
 
   const BookModel = context.app.db[MODEL_NAME_BOOK];
   const book = await BookModel.create(attributes);
+
+  book.User = context.currentUser
 
   context.status = CODE_201.code;
   context.set("Location", `${ROUTE_NAME_BOOKS}/${book.id}`);
@@ -113,7 +118,7 @@ router.patch("/:id", async (context, next) => {
   const id = context.params.id;
 
   const BookModel = context.app.db[MODEL_NAME_BOOK];
-  const book = await BookModel.findOrFail({ where: { id } });
+  const book = await BookModel.findOrFail({ where: { id }, ...includeUser });
 
   book.set(attributes);
   await book.save();

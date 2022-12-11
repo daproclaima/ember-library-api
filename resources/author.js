@@ -7,6 +7,7 @@ export default (model) => ({
   attributes: {
     firstName: model.firstName,
     lastName: model.lastName,
+    username: model.User.username,
   },
   links: {
     self: `${ROUTE_NAME_AUTHORS}/${model.id}`,

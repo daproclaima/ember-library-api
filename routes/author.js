@@ -13,6 +13,8 @@ import currentUser from '../middleware/current-user'
  */
 const { Op } = sequelize;
 
+const includeUser = {include: ['User']}
+
 const router = new Router();
 
 /**
@@ -26,7 +28,7 @@ router.get("/", async (context, next) => {
   const query = context.query["filter[query]"];
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR];
 
-  let getAuthors = async () => await AuthorModel.findAll();
+  let getAuthors = async () => await AuthorModel.findAll(includeUser);
 
   if (query) {
     getAuthors = async () =>
@@ -37,6 +39,7 @@ router.get("/", async (context, next) => {
             { firstName: { [Op.iLike]: `%${query}%` } },
           ],
         },
+        ...includeUser
       });
   }
 
@@ -53,7 +56,7 @@ router.get("/:id", async (context, next) => {
   const id = context.params.id;
 
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR];
-  const author = await AuthorModel.findOrFail({ where: { id } });
+  const author = await AuthorModel.findOrFail({ where: { id }, ...includeUser });
 
   context.body = context.app.serialize(MODEL_NAME_AUTHOR, author);
 });
@@ -67,7 +70,7 @@ router.get("/:id/books", async (context, next) => {
 
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR];
   const author = await AuthorModel.findOrFail({ where: { id } });
-  const arrayBooks = await author.getBooks();
+  const arrayBooks = await author.getBooks(includeUser);
 
   context.body = context.app.serialize(MODEL_NAME_BOOK, arrayBooks);
 });
@@ -82,6 +85,8 @@ router.post("/", currentUser, async (context, next) => {
 
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR];
   const author = await AuthorModel.create(attributes);
+
+  author.User = context.currentUser
 
   context.status = CODE_201.code;
   context.set("Location", `${ROUTE_NAME_AUTHORS}/${author.id}`);
@@ -98,7 +103,7 @@ router.patch("/:id", async (context, next) => {
   const id = context.params.id;
 
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR];
-  const author = await AuthorModel.findOrFail({ where: { id } });
+  const author = await AuthorModel.findOrFail({ where: { id }, ...includeUser });
 
   const data = {
     firstName: attributes.firstName || author.firstName,
