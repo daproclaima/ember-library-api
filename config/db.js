@@ -1,4 +1,4 @@
-require("dotenv").config();
+require('dotenv').config()
 
 module.exports = {
   development: {
@@ -9,9 +9,18 @@ module.exports = {
     host: process.env.DB_HOST,
     dialect: process.env.DB_DIALECT,
     dialectOptions: {
-      ssl: process.env.DB_SSL == "true",
+      ssl: process.env.DB_SSL=='true',
     },
   },
   test: {},
-  production: {},
-};
+  production: {
+    'use_env_variable': 'DATABASE_URL',
+    'dialect': 'postgres',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
+  },
+}
