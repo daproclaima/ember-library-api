@@ -7,6 +7,7 @@ import { CODE_201, CODE_204 } from "../constants/CODES";
 import { ROUTE_NAME_AUTHORS } from "../constants/ROUTE_NAMES";
 import sequelize from "sequelize";
 import currentUser from '../middleware/current-user'
+import { ForbiddenError } from '../errors/Forbidden'
 
 /**
  * @see https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
@@ -97,13 +98,15 @@ router.post("/", currentUser, async (context, next) => {
  * @function
  * @description update an author attributes matching provided id
  */
-router.patch("/:id", async (context, next) => {
+router.patch("/:id", currentUser, async (context, next) => {
   const attributes = context.getAttributes();
 
   const id = context.params.id;
 
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR];
   const author = await AuthorModel.findOrFail({ where: { id }, ...includeUser });
+
+  if(context.currentUser.id !== author.UserId) throw new ForbiddenError()
 
   const data = {
     firstName: attributes.firstName || author.firstName,
@@ -120,11 +123,13 @@ router.patch("/:id", async (context, next) => {
  * @function
  * @description delete an author matching provided id
  */
-router.del("/:id", async (context, next) => {
+router.del("/:id", currentUser, async (context, next) => {
   const id = context.params.id;
 
   const AuthorModel = context.app.db[MODEL_NAME_AUTHOR];
   const author = await AuthorModel.findOrFail({ where: { id } });
+
+  if(context.currentUser.id !== author.UserId) throw new ForbiddenError()
 
   await author.destroy();
 

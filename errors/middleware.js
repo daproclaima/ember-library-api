@@ -1,8 +1,9 @@
-import { CODE_401, CODE_404, CODE_500 } from '../constants/CODES'
+import { CODE_401, CODE_403, CODE_404, CODE_500 } from '../constants/CODES'
 import NotFoundError from './not-found'
 import { ValidationError, UniqueConstraintError } from 'sequelize'
 import { dasherize, underscore } from 'inflected'
 import UnauthorizedError from './unauthorized'
+import { ForbiddenError } from './Forbidden'
 
 export default async (context, next) => {
   try {
@@ -29,6 +30,19 @@ export default async (context, next) => {
               code: CODE_404.code,
               title: CODE_404.title,
               detail: `${ error.modelName } with id ${ error.id } not found.`,
+            },
+          ],
+        }
+        break
+
+      case error instanceof ForbiddenError:
+        context.status = CODE_403.code
+        context.body = {
+          errors: [
+            {
+              code: CODE_403.code,
+              title: CODE_403.title,
+              detail: CODE_403.detail,
             },
           ],
         }

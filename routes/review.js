@@ -6,6 +6,7 @@ import {
 import { ROUTE_NAME_REVIEWS } from "../constants/ROUTE_NAMES";
 import { CODE_201, CODE_204 } from "../constants/CODES";
 import currentUser from '../middleware/current-user'
+import { ForbiddenError } from '../errors/Forbidden'
 
 const includeUser = {include: ['User']}
 
@@ -76,13 +77,15 @@ router.post("/", currentUser, async (context, next) => {
  * @function
  * @description update a review attributes matching provided id
  */
-router.patch("/:id", async (context, next) => {
+router.patch("/:id", currentUser, async (context, next) => {
   const attributes = context.getAttributes();
 
   const id = context.params.id;
 
   const ReviewModel = context.app.db[MODEL_NAME_REVIEW];
   const review = await ReviewModel.findOrFail({ where: { id }, ...includeUser });
+
+  if(context.currentUser.id !== review.UserId) throw new ForbiddenError()
 
   review.set(attributes);
   await review.save();
@@ -94,11 +97,13 @@ router.patch("/:id", async (context, next) => {
  * @function
  * @description delete a review matching provided id
  */
-router.del("/:id", async (context, next) => {
+router.del("/:id", currentUser, async (context, next) => {
   const id = context.params.id;
 
   const ReviewModel = context.app.db[MODEL_NAME_REVIEW];
   const review = await ReviewModel.findOrFail({ where: { id } });
+
+  if(context.currentUser.id !== review.UserId) throw new ForbiddenError()
 
   await review.destroy();
 

@@ -16,8 +16,9 @@ export default async (context, next) => {
         id: result.sub,
       },
     })
-    return await next(context)
   } catch (error) {
     throw new UnauthorizedError()
   }
+
+  return await next(context)
 }

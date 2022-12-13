@@ -20,8 +20,9 @@ module.exports = {
     code: 401,
   },
   CODE_403: {
-    title: "RESSOURCE_ACCESS_UNAUTHORIZED",
+    title: "RESSOURCE_ACCESS_FORBIDDEN",
     code: 403,
+    detail: 'User deos not have access to access or modify this resource'
   },
   CODE_404: {
     title: "RESSOURCE_NOT_FOUND",
